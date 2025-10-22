@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Web-Based Text Encryption Tool</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <!-- CryptoJS CDN for AES/DES/SHA256 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#4f46e5;--muted:#94a3b8;--text:#e6eef8}
+    *{box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial}
+    body{margin:0;min-height:100vh;background:linear-gradient(180deg,#071328 0%, #07182a 60%);color:var(--text);display:flex;align-items:center;justify-content:center;padding:24px}
+    .container{width:100%;max-width:980px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:20px;box-shadow:0 6px 24px rgba(3,7,18,0.6)}
+    h1{margin:0 0 6px;font-size:20px}
+    p.lead{margin:0 0 16px;color:var(--muted)}
+    .row{display:flex;gap:16px;flex-wrap:wrap}
+    .col{flex:1;min-width:260px}
+    label{display:block;margin:12px 0 6px;color:var(--muted);font-size:13px}
+    textarea,input,select{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--text);min-height:44px}
+    textarea{min-height:120px;resize:vertical}
+    .controls{display:flex;gap:8px;align-items:center;margin-top:12px}
+    button{background:var(--accent);border:none;padding:10px 14px;border-radius:8px;color:white;cursor:pointer}
+    button.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--text)}
+    .small{font-size:13px;padding:8px 10px}
+    .meta{margin-top:10px;color:var(--muted);font-size:13px}
+    .flex-row{display:flex;gap:8px;align-items:center}
+    .result-card{margin-top:16px;padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02)}
+    .tag{display:inline-block;padding:6px 8px;border-radius:8px;background:rgba(255,255,255,0.03);font-size:12px;color:var(--muted)}
+    footer{margin-top:14px;color:var(--muted);font-size:13px}
+    .notice{background:#062338;padding:10px;border-radius:8px;margin-top:12px;color:#bde0ff;font-size:13px}
+    .error{color:#ffb4b4;font-size:13px;margin-top:8px}
+    @media (max-width:700px){.row{flex-direction:column}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Web-Based Text Encryption Tool</h1>
+    <p class="lead">Enter text, pick an algorithm, and Encrypt / Decrypt. This demo uses CryptoJS for AES/DES and JS for Caesar/Base64.</p>
+
+    <div class="row">
+      <div class="col">
+        <label for="inputText">Plaintext / Ciphertext</label>
+        <textarea id="inputText" placeholder="Type or paste text here..."></textarea>
+
+        <label for="algo">Choose algorithm</label>
+        <select id="algo">
+          <option value="">-- Select algorithm --</option>
+          <option value="caesar">Caesar Cipher (shift)</option>
+          <option value="base64">Base64</option>
+          <option value="aes">AES (password required)</option>
+          <option value="des">DES (password required)</option>
+          <option value="sha256">SHA-256 (hash, one-way)</option>
+        </select>
+
+        <div id="passwordRow" style="display:none">
+          <label for="password">Password / Passphrase</label>
+          <input id="password" type="password" placeholder="Enter a password (for AES/DES)"/>
+        </div>
+
+        <div id="shiftRow" style="display:none">
+          <label for="shift">Shift (for Caesar cipher)</label>
+          <input id="shift" type="number" value="3" min="0" max="25"/>
+        </div>
+
+        <div class="controls">
+          <button id="encryptBtn" class="small">Encrypt</button>
+          <button id="decryptBtn" class="small secondary">Decrypt</button>
+          <button id="hashBtn" class="small secondary">Hash (SHA-256)</button>
+          <button id="clearBtn" class="small secondary">Clear</button>
+        </div>
+
+        <div class="meta">Validation: empty input and algorithm selection are checked. Password required for AES/DES.</div>
+        <div id="error" class="error" style="display:none"></div>
+      </div>
+
+      <div class="col">
+        <label for="outputText">Result</label>
+        <textarea id="outputText" readonly placeholder="Result will appear here..."></textarea>
+
+        <div class="controls" style="margin-top:8px">
+          <button id="copyBtn" class="small">Copy Result</button>
+          <button id="downloadBtn" class="small secondary">Download as .txt</button>
+        </div>
+
+        <div class="result-card">
+          <div><span class="tag">Tips</span> Use AES/DES for symmetric encryption. Keep your passphrase safe — losing it means you cannot decrypt.</div>
+          <div class="notice">Note: This tool is for educational/demo use only. Crypto choices and passphrase handling here are simplified; do not use this for sensitive production secrets.</div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <div>Implemented algorithms: Caesar, Base64, AES, DES, SHA-256.</div>
+    </footer>
+  </div>
+
+<script>
+/* ==================
+   Helper functions
+   ================== */
+
+const byId = id => document.getElementById(id);
+
+function showError(msg) {
+  const el = byId('error');
+  el.innerText = msg;
+  el.style.display = msg ? 'block' : 'none';
+}
+
+/* ---------- Caesar Cipher ---------- */
+function caesarEncrypt(plain, shift) {
+  shift = ((shift % 26) + 26) % 26;
+  return plain.split('').map(ch => {
+    const code = ch.charCodeAt(0);
+    // uppercase
+    if (code >= 65 && code <= 90) return String.fromCharCode(((code - 65 + shift) % 26) + 65);
+    // lowercase
+    if (code >= 97 && code <= 122) return String.fromCharCode(((code - 97 + shift) % 26) + 97);
+    return ch;
+  }).join('');
+}
+function caesarDecrypt(cipher, shift) {
+  return caesarEncrypt(cipher, -shift);
+}
+
+/* ---------- Base64 ---------- */
+function base64Encode(text) {
+  // handle unicode by encoding as UTF-8 first
+  return btoa(unescape(encodeURIComponent(text)));
+}
+function base64Decode(b64) {
+  try {
+    return decodeURIComponent(escape(atob(b64)));
+  } catch(e) {
+    throw new Error('Invalid Base64 string');
+  }
+}
+
+/* ---------- AES / DES via CryptoJS ---------- */
+function aesEncrypt(plain, passphrase) {
+  // uses CryptoJS default OpenSSL key derivation with passphrase — fine for demo
+  const encrypted = CryptoJS.AES.encrypt(plain, passphrase).toString();
+  return encrypted;
+}
+function aesDecrypt(ciphertext, passphrase) {
+  const bytes = CryptoJS.AES.decrypt(ciphertext, passphrase);
+  const plain = bytes.toString(CryptoJS.enc.Utf8);
+  if (!plain) throw new Error('Wrong password or invalid ciphertext');
+  return plain;
+}
+function desEncrypt(plain, passphrase) {
+  return CryptoJS.DES.encrypt(plain, passphrase).toString();
+}
+function desDecrypt(ciphertext, passphrase) {
+  const bytes = CryptoJS.DES.decrypt(ciphertext, passphrase);
+  const plain = bytes.toString(CryptoJS.enc.Utf8);
+  if (!plain) throw new Error('Wrong password or invalid ciphertext');
+  return plain;
+}
+
+/* ---------- SHA-256 ---------- */
+function sha256Hash(text) {
+  return CryptoJS.SHA256(text).toString(CryptoJS.enc.Hex);
+}
+
+/* ---------- Utility ---------- */
+function downloadTxt(filename, text) {
+  const blob = new Blob([text], {type: 'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+/* ===================
+   UI wiring
+   =================== */
+
+const algoEl = byId('algo');
+const passwordRow = byId('passwordRow');
+const shiftRow = byId('shiftRow');
+
+algoEl.addEventListener('change', () => {
+  const v = algoEl.value;
+  // show password only for AES or DES
+  passwordRow.style.display = (v === 'aes' || v === 'des') ? 'block' : 'none';
+  // show shift for caesar
+  shiftRow.style.display = (v === 'caesar') ? 'block' : 'none';
+  showError('');
+});
+
+byId('encryptBtn').addEventListener('click', () => {
+  showError('');
+  const txt = byId('inputText').value;
+  const algo = algoEl.value;
+  if (!txt) return showError('Input text is empty.');
+  if (!algo) return showError('Please select an algorithm.');
+  try {
+    let out = '';
+    if (algo === 'caesar') {
+      const shift = parseInt(byId('shift').value) || 0;
+      out = caesarEncrypt(txt, shift);
+    } else if (algo === 'base64') {
+      out = base64Encode(txt);
+    } else if (algo === 'aes') {
+      const pass = byId('password').value;
+      if (!pass) return showError('Password required for AES.');
+      out = aesEncrypt(txt, pass);
+    } else if (algo === 'des') {
+      const pass = byId('password').value;
+      if (!pass) return showError('Password required for DES.');
+      out = desEncrypt(txt, pass);
+    } else if (algo === 'sha256') {
+      out = sha256Hash(txt);
+    } else {
+      return showError('Unsupported algorithm.');
+    }
+    byId('outputText').value = out;
+  } catch (err) {
+    showError(err.message || String(err));
+  }
+});
+
+byId('decryptBtn').addEventListener('click', () => {
+  showError('');
+  const txt = byId('inputText').value;
+  const algo = algoEl.value;
+  if (!txt) return showError('Input (ciphertext) is empty.');
+  if (!algo) return showError('Please select an algorithm.');
+  try {
+    let out = '';
+    if (algo === 'caesar') {
+      const shift = parseInt(byId('shift').value) || 0;
+      out = caesarDecrypt(txt, shift);
+    } else if (algo === 'base64') {
+      out = base64Decode(txt);
+    } else if (algo === 'aes') {
+      const pass = byId('password').value;
+      if (!pass) return showError('Password required for AES.');
+      out = aesDecrypt(txt, pass);
+    } else if (algo === 'des') {
+      const pass = byId('password').value;
+      if (!pass) return showError('Password required for DES.');
+      out = desDecrypt(txt, pass);
+    } else if (algo === 'sha256') {
+      return showError('SHA-256 is one-way and cannot be decrypted.');
+    } else {
+      return showError('Unsupported algorithm.');
+    }
+    byId('outputText').value = out;
+  } catch (err) {
+    showError(err.message || String(err));
+  }
+});
+
+byId('hashBtn').addEventListener('click', () => {
+  showError('');
+  const txt = byId('inputText').value;
+  if (!txt) return showError('Input text is empty.');
+  byId('outputText').value = sha256Hash(txt);
+});
+
+byId('clearBtn').addEventListener('click', () => {
+  byId('inputText').value = '';
+  byId('outputText').value = '';
+  showError('');
+});
+
+byId('copyBtn').addEventListener('click', async () => {
+  const out = byId('outputText').value;
+  if (!out) return showError('Nothing to copy.');
+  try {
+    await navigator.clipboard.writeText(out);
+    showError('Copied to clipboard ✓');
+    setTimeout(()=>showError(''), 1800);
+  } catch (e) {
+    showError('Copy failed. Select and copy manually.');
+  }
+});
+
+byId('downloadBtn').addEventListener('click', () => {
+  const out = byId('outputText').value;
+  if (!out) return showError('Nothing to download.');
+  downloadTxt('output.txt', out);
+});
+
+</script>
+</body>
+</html>
