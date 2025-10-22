@@ -1,28 +1,28 @@
-# 🔐 Web-Based Text Encryption Tool
+#  Web-Based Text Encryption Tool
 
 A single-page web app that lets users **encrypt, decrypt, and hash text** using multiple algorithms — built with **HTML, CSS, and JavaScript (CryptoJS)**.
 
 ---
 
-## 🚀 Features
+##  Features
 
-✅ **Encryption & Decryption Algorithms**
+ **Encryption & Decryption Algorithms**
 - Caesar Cipher (shift cipher)
 - Base64 Encode/Decode
 - AES Encryption (password-based)
 - DES Encryption (password-based)
 
-✅ **Hashing**
+ **Hashing**
 - SHA-256 (one-way hashing)
 
-✅ **Extras**
+ **Extras**
 - Copy ciphertext button
 - Download result as `.txt`
 - Input validation (empty checks, password required for AES/DES)
 
 ---
 
-## 🖥️ Tech Stack
+##  Tech Stack
 
 | Layer | Tools / Libraries |
 |-------|--------------------|
@@ -32,15 +32,16 @@ A single-page web app that lets users **encrypt, decrypt, and hash text** using 
 
 ---
 
-## 📸 Screenshot
+##  Screenshot
 
-![App Preview](https://via.placeholder.com/900x400?text=Web-Based+Text+Encryption+Tool)
+![App Preview](https://affanahmadst274-ui.github.io/Web-Based-Text-Encryption-Tool/)
 
-*(Add your real screenshot later — open app, take a screenshot, and upload to GitHub)*
+<img width="994" height="578" alt="image" src="https://github.com/user-attachments/assets/8eb246a5-062a-4b6a-94fc-1c75696d031a" />
+<img width="1059" height="588" alt="image" src="https://github.com/user-attachments/assets/4374e509-8dc5-49fb-bc22-6e3e3dc8269e" />
 
 ---
 
-## 🧠 Algorithms Used
+##  Algorithms Used
 
 ### 1. Caesar Cipher
 A basic substitution cipher that shifts letters by a fixed number (e.g., shift = 3 → “A” becomes “D”).
@@ -59,9 +60,4 @@ A secure one-way hashing algorithm — cannot be decrypted.
 
 ---
 
-## ⚙️ How to Run
-
-### 🟩 Option 1: Run Locally
-1. Clone this repository:
-   ```bash
    git clone https://github.com/<your-username>/web-text-encryption-tool.git
