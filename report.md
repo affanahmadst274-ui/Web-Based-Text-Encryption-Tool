@@ -120,4 +120,4 @@ This tool highlights the importance of encryption in modern web security and pro
 **Roll Number:** *03-134221-003*  
 **Course:** Infromation Security  
 **Institution:** *Bahria University Lahore *  
-**GitHub Repository:** [https://github.com/affanahmadst274-ui/web-text-encryption-tool](https://github.com/affanahmadst274-ui/web-text-encryption-tool)
+**GitHub Repository:** [https://github.com/affanahmadst274-ui/web-text-encryption-tool](https://github.com/affanahmadst274-ui.github.io/web-text-encryption-tool)
