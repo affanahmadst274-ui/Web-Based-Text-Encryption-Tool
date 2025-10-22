@@ -34,7 +34,6 @@ A single-page web app that lets users **encrypt, decrypt, and hash text** using 
 
 ##  Screenshot
 
-![App Preview](https://affanahmadst274-ui.github.io/Web-Based-Text-Encryption-Tool/)
 
 <img width="994" height="578" alt="image" src="https://github.com/user-attachments/assets/8eb246a5-062a-4b6a-94fc-1c75696d031a" />
 <img width="1059" height="588" alt="image" src="https://github.com/user-attachments/assets/4374e509-8dc5-49fb-bc22-6e3e3dc8269e" />
@@ -60,4 +59,4 @@ A secure one-way hashing algorithm — cannot be decrypted.
 
 ---
 
-   git clone https://github.com/<your-username>/web-text-encryption-tool.git
+   Web Link :https://affanahmadst274-ui.github.io/Web-Based-Text-Encryption-Tool/
